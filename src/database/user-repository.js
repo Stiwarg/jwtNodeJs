@@ -18,21 +18,26 @@ export class UserRepository {
         Validation.password( password );
 
 
-        const user = User.findOne({ username });
+        const user = await User.findOne({ username });
+        console.log("hola :",user );
         
         if ( user ) throw new Error('Username already exists');
         const id = crypto.randomUUID();
         const hashedPassword = await bcrypt.hash( password, SALT_ROUNDS)
-        const hashedPassword2 = bcrypt.hashSync( password, SALT_ROUNDS)
 
-
-        User.create({
+        console.log('Guardando usuario en la base de datos...');
+        // Crea el nuevo usuario y lo guarda
+        const newUser = await  User.create({
             _id: id,
             username,
             password: hashedPassword 
         }).save(); 
-            
-        return id;
+
+        console.log('Usuario guardado:', newUser);
+        // Excule la contraseña y devuelve el usuario sin ella
+        const { password: _, ...publicUser } = newUser;
+        // Devuelve el objeto del usuario sin la contraseña
+        return publicUser;
     }
 
     static async  login ({ username, password }) {
