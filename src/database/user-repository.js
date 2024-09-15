@@ -8,7 +8,8 @@ const { Schema } = new DBLocal({ path: './data' });
 const User = Schema('User', {
     _id: { type: String, required: true },
     username: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    refreshToken: { type: String, required: false, default: '' } // Campo opcional para el refresh token
 });
 
 export class UserRepository {
@@ -55,6 +56,30 @@ export class UserRepository {
 
         return publicUser;
     
+    }
+
+    static async saveRefreshToken( userId , refreshToken ) {
+        const user = await User.findOne({ _id: userId });
+        if ( !user ) throw new Error('User not found');
+        user.refreshToken = refreshToken;
+        await user.save();
+    }
+
+    static async removeRefreshToken( userId ) {
+        console.log('User ID for removal:', userId); // Añade este log para depuración
+        const user = await User.findOne({ _id: userId });
+        if ( !user ) throw new Error('User not found');
+        console.log("se encontro el usuario");
+        user.refreshToken = '';
+        console.log("se coloco el refresh en null");
+        console.log("Hasta aqui llega");
+        await user.save(); 
+        console.log("Se realizo el guardado");
+    }
+
+    static async findByRefreshToken ( userId, refreshToken ) {
+        const user = await User.findOne({ _id: userId, refreshToken });
+        return user;
     }
 }
 

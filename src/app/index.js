@@ -1,5 +1,5 @@
 import express from 'express';
-import { PORT, SECRET_JWT_KEY } from '../config/config.js';
+import { PORT, SECRET_JWT_KEY, REFRESH_SECRET_JWT_KEY } from '../config/config.js';
 import { UserRepository } from '../database/user-repository.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
@@ -15,44 +15,72 @@ app.use( cors({
     methods: 'GET, POST, PUT, DELETE', // Métodos permitidos
     allowedHeaders: 'Content-Type, Authorization', // Encabezados permitidos
 }));
+// Middleware para verificar el access token
 app.use( ( req, res, next ) => {
-    const token = req.cookies.access_token;
+    const tokenFromCookie = req.cookies.access_token;
+    const tokenFromHeader = req.headers.authorization?.split('')[1];
+    const token = tokenFromHeader || tokenFromCookie;
     req.session = { user: null };
 
-    try {
-        const data = jwt.verify( token, SECRET_JWT_KEY );
-        req.session.user = data;
-    } catch {}
-
+    if ( token ) {
+        try {
+            const data = jwt.verify( token, SECRET_JWT_KEY );
+            req.session.user = data;
+            console.log('User stored in session:', req.session.user); // Log de depuración
+        } catch ( error ) {
+            console.error('Token verification failed:', error.message);
+        }
+    }
+   
     next();
 });
 
+// Ruta de ejemplo para la página de inicio
 app.get('/', ( req, res  ) => {
     const { user } = req.session;
     res.render('index', user );
 });
 
+// Ruta para el login
 app.post('/login', async ( req, res ) => {
     const { username, password } = req.body;
 
     try {
         const user = await UserRepository.login({ username, password });
-        const token = jwt.sign({ id: user._id, username: user.username },
+        //Generación del access token
+        const accessToken = jwt.sign({ id: user._id, username: user.username },
             SECRET_JWT_KEY,
             {
-            expiresIn: '1h'
+                expiresIn: 1000 * 60 * 15
             });
         
-        res
-            .cookie('access_token', token, {
+        // Generación del refresh token ( expira en 7 dias )
+        const refreshToken = jwt.sign({ id: user._id, username: user.username },
+            REFRESH_SECRET_JWT_KEY,
+            { 
+                expiresIn: '7d'
+            }
+            );
+
+        await UserRepository.saveRefreshToken( user._id , refreshToken);
+        
+        // Guarda el access token en una cookie
+        return res
+            .cookie('access_token', accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 1000 * 60 * 60
+                maxAge: 1000 * 60 * 15
             })
-            .send({ user, token });
+            .cookie('refresh_token', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 1000 * 60 * 60 * 24 * 7 // 7 DIAS
+            })
+            .send({ user, accessToken, refreshToken });
     } catch (error) {
-        res.status(401).send( error.message );
+        return res.status(401).send( error.message );
     }
 });
 
@@ -73,13 +101,23 @@ app.post('/register', async ( req, res ) => {
             SECRET_JWT_KEY,
             {
                 // El token expirará en 1 hora.
-                expiresIn: '1h',
+                expiresIn: '15m',
             });
+
+        const refreshToken = jwt.sign({ id: id._id, username: id.username },
+
+            SECRET_JWT_KEY,
+            {
+                expiresIn: '7d',
+            });
+
+            await UserRepository.saveRefreshToken( id._id, refreshToken );
+
             console.log('Token generado:', token);
 
             //res.status(200).send({ id, token });
         // Establece una cookie en el cliente con el token de acceso.            
-        res
+        return res
             .cookie('access_token', token, {
                 // Esto asegura que la cookue solo sea accesible desde el servidor, lo que mejora la seguridad contra ataque XSS
                 httpOnly: true,
@@ -88,9 +126,15 @@ app.post('/register', async ( req, res ) => {
                 // Política de SameSite para prevenir ataques CSRF, asegurando que la cookie solo sea enviada si proviene del mismo sitio
                 sameSite: 'strict',
                 // Define la duración de la cookie ( 1 hora en milisegundos ).
-                maxAge: 1000 * 60 * 60 // 1 hora
+                maxAge: 1000 * 60 * 15 // 1 hora
             })
-            .send({ id, token }); // Envía como respuesta al cliente los detalles usuario y el token JWT  */
+            .cookie('refresh_token', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 1000 * 60 * 60 * 24 * 7 
+            })
+            .send({ id, token, refreshToken }); // Envía como respuesta al cliente los detalles usuario y el token JWT  */
     } catch (error) { // manejo de errores.
         // Si ocurre un error, devuelve una respuesta con el código 400 y un mensaje descriptivo del error
         console.log('Error en el backend:', error );
@@ -99,18 +143,88 @@ app.post('/register', async ( req, res ) => {
 
 });
 
-app.post('/logout', ( req, res ) => {
+app.post('/logout', async ( req, res ) => {
+
+    //const { refresh_token } = req.cookies;
+    const { user } = req.session;
+
+    if ( user ) {
+        try {
+            await UserRepository.removeRefreshToken( user.id );    
+
+        } catch (error) {
+            return res.status( 400 ).send({ error: 'Error removing refresh token' });
+        }
+        
+    }
+
     res
         .clearCookie('access_token')
+        .clearCookie('refresh_token')
         .json({ message: 'Logout successful' });
 });
-
+//http://localhost:3025/protected
+//http://localhost:3025/refresh-token
 app.get('/protected', ( req, res ) => {
 
     const { user } = req.session;
     if ( !user ) return res.status(403).send('Access not authorized');
     res.render('protected', user );
 });
+
+app.post('/refresh-token', async( req, res ) => {
+    const { refresh_token } = req.cookies;
+
+    if ( !refresh_token ) return res.status(404).send('Refresh token missing');
+
+    try {
+
+        const data = jwt.verify( refresh_token, REFRESH_SECRET_JWT_KEY );
+
+        const user = await UserRepository.findByRefreshToken( data.id, refresh_token);
+        
+        if ( !user ) {
+            res.clearCookie('access_token').clearCookie('refresh_token');
+            return res.status(401).send('Unauthorized');
+        }
+        
+        const newAccessToken = jwt.sign({ id: user._id, username: user.username },
+            SECRET_JWT_KEY,
+            {
+                expiresIn: '15m' // Expira en 15 minutos
+            }
+        );
+
+        const newRefreshToken = jwt.sign({ id: user._id, username: user.username },
+            REFRESH_SECRET_JWT_KEY,
+            {
+                expiresIn: '7d'
+            }
+        );
+
+        user.refreshToken = newRefreshToken;
+        await user.save();
+        
+        return res
+            .cookie('access_token', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Solo en HTTPS en producción
+            sameSite: 'strict',
+            maxAge: 1000 * 60 * 15 // 15 minutos
+        })
+            .cookie('refresh_token', newRefreshToken, {
+            httpOnly: true,
+            secure:process.env.NODE_ENV === 'production', // Solo en HTTPS en producción
+            sameSite: 'strict',
+            maxAge: 1000 * 60 * 60 * 24 * 7 // 7 dias
+                
+        })
+            .send({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+
+    } catch (error) {
+        return res.status(403).send('Token verification failed');
+    }
+})
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${ PORT }`);
