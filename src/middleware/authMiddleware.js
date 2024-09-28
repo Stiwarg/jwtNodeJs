@@ -12,7 +12,7 @@ export const verifyToken  = ( req, res, next ) => {
         try {
             const data = jwt.verify( token, SECRET_JWT_KEY );
             req.session.user = data;
-            console.log('User stored in session:', req.session.user); // Log de depuración
+            //console.log('User stored in session:', req.session.user); // Log de depuración
         } catch (error) {
             console.error('Token verification failed:', error.message );
             // Respuesta en cso de error

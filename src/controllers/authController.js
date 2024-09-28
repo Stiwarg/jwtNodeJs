@@ -7,7 +7,7 @@ export const login = async( req, res ) => {
 
     try {
         const user = await UserRepository.login({ username, password });
-        const accessToken = jwt.sign({ id: user._id, username: user.username }, SECRET_JWT_KEY, { expiresIn: '1m' } );
+        const accessToken = jwt.sign({ id: user._id, username: user.username }, SECRET_JWT_KEY, { expiresIn: '10m' } );
         const refreshToken = jwt.sign({ id: user._id, username: user.username }, REFRESH_SECRET_JWT_KEY, { expiresIn: '5m'} );
 
         await UserRepository.saveRefreshToken( user._id, refreshToken );
@@ -17,7 +17,7 @@ export const login = async( req, res ) => {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'strict',
-                    maxAge: 1000 * 60
+                    maxAge: 1000 * 60 * 10
                 })
                 .cookie('refresh_token', refreshToken, {
                     httpOnly: true,
