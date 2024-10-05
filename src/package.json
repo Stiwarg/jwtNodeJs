@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "build:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css", 
+    "dev:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css --watch" 
   },
   "author": "",
   "license": "ISC",
@@ -23,7 +25,11 @@
     "socket.io": "4.8.0"
   },
   "devDependencies": {
-    "standard": "^17.1.0"
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "postcss-cli": "^11.0.0",
+    "standard": "^17.1.0",
+    "tailwindcss": "^3.4.13"
   },
   "eslintConfig": {
     "extends": "standard"
