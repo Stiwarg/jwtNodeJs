@@ -1,0 +1,46 @@
+<div id="carousel" class="hidden lg:block lg:w-1/2 relative overflow-hidden">
+
+    <!-- Generar dinámicamente las imágenes del carrusel, usando un bucle para iterar sobre los elementos del array carouselItems (Que provienen del backend ). Cada objeto contiene la imagenm título y descripción. -->
+     <% carouselItems.forEach(( item, index ) => { %>
+        <!-- Para cada objeto del array, se genera una diapositiva ( div ) que incluye una imagen, texto de la disapositiva. La primera diapositiva tiene la clase opacity-100 ( visible ), mientras que las otras diapositivas comienzan con opacity-0 ( ocultas )-->
+        <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 <%= index === 0 ? 'opacity-100' : 'opacity-0' %>">
+            
+            <!-- Cada imagen se carga a partir de la URL dada en el array-->
+            <img src="<%= item.image %>" alt="Slide <%= index + 1 %>" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div class="text-white text-center max-w-lg px-4">
+                    
+                    <!-- Un titulo y una descripción superpuestos sobre la imagen con un fondo semitransparente negro -->
+                    <h2 class="text-4xl font-bold mb-4"><%= item.title %></h2>
+                    <p class="text-xl"><%= item.description %></p>
+                </div>
+            </div>
+        </div>
+     <% }) %>
+
+     <!-- Botones de navegación permiten moverse entre las imágenes del carrusel ( anterior y siguieres) -->
+      <button id="prevSlide" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <!-- Icono de Chevron Izquierdo - anterior -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+      </button>
+
+      <button id="nextSlide" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <!-- Icono de Chevron Derecho - siguiente -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+      </button>
+
+      <!-- Indicadores de diapositivas que son pequeños circulos en la parte inferior del carrusel que indican que diapositiva está actica. También se puede usar para saltar directamente a una diapositiva específica. -->
+      <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <!--El primer parametro del forEach (_) que es un placeholder se usa cuando no necesitamos el valor del elemento (la información de la diapositiva en si, la imagen o el texto ). Solo nos interesa el indice(index). Index es el indice de cada diapositiva en el carrusel. -->
+
+        <% carouselItems.forEach(( _, index ) => { %>
+
+            <!-- El indicador correspondiente a la dispositiva activa tiene el color bg-blue 500, mientras que los demás son blancos y semitransparentes ( bg-white bg-opacity-50 )  -->
+            <button class="carousel-indicator w-3 h-3 rounded-full <%= index === 0 ? 'bg-blue-500' : 'bg-white bg-opacity-50' %>"></button>
+        <% }) %>
+      </div>
+</div>

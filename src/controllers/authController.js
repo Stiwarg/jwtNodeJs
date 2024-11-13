@@ -37,28 +37,29 @@ export const register = async ( req, res ) => {
     const { username, password } = req.body;
 
     try {
-        const id = await UserRepository.create({ username, password });
-        const token = jwt.sign({ id: id._id, username: id.username }, SECRET_JWT_KEY, { expiresIn: '15m' });
-        const refreshToken = jwt.sign({ id: id._id, username: id.username }, REFRESH_SECRET_JWT_KEY, { expiresIn: ' 7d'});
+        const user = await UserRepository.create({ username, password });
+        const accessToken = jwt.sign({ id: user._id, username: user.username }, SECRET_JWT_KEY, { expiresIn: '10m' });
+        const refreshToken = jwt.sign({ id: user._id, username: user.username }, REFRESH_SECRET_JWT_KEY, { expiresIn: '5m'});
 
-        await UserRepository.saveRefreshToken( id._id, refreshToken );
+        await UserRepository.saveRefreshToken( user._id, refreshToken );
 
         return res  
-                .cookie('access_token', token, {
+                .cookie('access_token', accessToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'strict',
-                    maxAge: 1000 * 60 * 15 
+                    maxAge: 1000 * 60 * 10 
                 })
                 .cookie('refresh_token', refreshToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'strict',
-                    maxAge: 1000 * 60 * 60 * 24 * 7 
+                    maxAge: 1000 * 60 * 5 
                 })
                 .status( 200 )
-                .send({ id, token, refreshToken });
+                .send({ user, accessToken, refreshToken });
     } catch (error) {
+        console.error('Error en registro: ', error.message );
         return res.status( 400 ).send({ error: error.message });
     }
 }

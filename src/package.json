@@ -7,12 +7,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --watch server/index.js",
-    "build:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css", 
-    "dev:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css --watch" 
+    "build:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css",
+    "dev:css": "npx postcss styles/tailwind.css -o public/css/tailwind.css --watch"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "animejs": "^3.2.2",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -22,7 +23,9 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "jsonwebtoken": "^9.0.2",
-    "socket.io": "4.8.0"
+    "popmotion": "^11.0.5",
+    "socket.io": "4.8.0",
+    "stylefire": "^7.0.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

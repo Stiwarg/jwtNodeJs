@@ -1,7 +1,21 @@
-<html>
-    <body>
-        <h1>Hola <%= username %>!</h1>
-        <h2>Este contenido está protegido</h2>
-        <a href="/chat">Entrar al chat</a>
-    </body>
+<html lang="en">
+<head>
+
+    <title>Chat AWS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" defer></script>
+    <script>
+        const currentUser2 = {
+            username: '<%= username %>'
+        };
+    </script>
+<body class="bg-gray-100">
+    <div id="app" class="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 md:p-8">
+
+    </div>
+<script type="module" src="../public/js/dashboard2.js"></script>
+</body>
 </html>
