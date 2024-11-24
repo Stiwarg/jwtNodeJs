@@ -1,6 +1,6 @@
 import { createElement } from '../../utilities/createElementDocument.js';
+import { isDarkMode } from '../../utilities/themeState.js';
 
-let darkMode = false;
 
 export let friendRequests = [
     {
@@ -46,24 +46,24 @@ const renderFriendRequest = () => {
 
     container.innerHTML = '';
 
-    const title = createElement('h2', `text-2xl font-semibold ${ darkMode ? 'text-white' : 'text-gray-800'} mb-6 transition-colors duration-300`,'Friend Requests');
+    const title = createElement('h2', `text-2xl font-semibold ${ isDarkMode() ? 'text-white' : 'text-gray-800'} mb-6 transition-colors duration-300`,'Friend Requests');
     container.appendChild( title );
 
     if ( friendRequests.length === 0 ) {
-        const noRequestMessage = createElement('p',`text-center ${ darkMode ? 'text-gray-400' : 'text-gray-600'}`);
+        const noRequestMessage = createElement('p',`text-center ${ isDarkMode() ? 'text-gray-400' : 'text-gray-600'}`);
         noRequestMessage.textContent = 'No pending friend request';
         container.appendChild( noRequestMessage ); 
     } else {
         const friendContainer = createElement('div', `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6`);
         friendRequests.forEach( request => {
-            const requestCard = createElement('div',`${ darkMode ? 'bg-gray-700' : 'bg-white'} p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 flex flex-col items-center justify-center text-center`);
+            const requestCard = createElement('div',`${ isDarkMode() ? 'bg-gray-700' : 'bg-white'} p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 flex flex-col items-center justify-center text-center`);
             requestCard.setAttribute('data-friendReques-id', request.id );
             const avatar = createElement('img', 'w-20 h-20 rounded-full mb-4');
             avatar.src = request.avatar;
             avatar.alt = request.name;
             requestCard.appendChild( avatar );
 
-            const name = createElement('h3', `font-semibold ${ darkMode ? 'text-white' : 'text-gray-800'} mb-2`, request.name );
+            const name = createElement('h3', `font-semibold ${ isDarkMode() ? 'text-white' : 'text-gray-800'} mb-2`, request.name );
             requestCard.appendChild( name );
 
             const subDiv = createElement('div', 'flex space-x-2');
