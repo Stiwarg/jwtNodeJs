@@ -1,6 +1,6 @@
 import { createElement } from '../../utilities/createElementDocument.js';
 import { isDarkMode } from '../../utilities/themeState.js';
-
+import { getElement } from '../../utilities/queryDocument.js';
 
 export let friendRequests = [
     {
@@ -16,7 +16,7 @@ export let friendRequests = [
 
 export const updateNotificationBadge = () => {
 
-    const notifationBadge = document.querySelector('.notificationBadge');
+    const notifationBadge = getElement('.notificationBadge');
     if ( notifationBadge ) {
         notifationBadge.textContent = friendRequests.length;
         notifationBadge.hidden = friendRequests.length === 0;
@@ -41,7 +41,7 @@ const rejectFriendRequest = ( userId, event ) => {
 }
 
 const renderFriendRequest = () => {
-    const container = document.querySelector('.containerSub');
+    const container = getElement('.containerSub');
     if ( !container ) return;
 
     container.innerHTML = '';
