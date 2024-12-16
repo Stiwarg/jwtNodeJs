@@ -2,6 +2,9 @@ const toggleFormLink = document.getElementById('toggle-form'); // Boton que real
 const loginForm = document.getElementById('login-form'); //Formulario de login
 const registerForm = document.getElementById('register-form'); // Formulario de registro
 const formTitle = document.getElementById('form-title'); // Titulo del formulario 
+const profilePicture = document.getElementById('profilePicturePreview'); // Imagen inicial
+
+//const initialSrc = profilePicture.src;
 
 toggleFormLink.addEventListener('click', ( e ) => {
 
@@ -12,11 +15,13 @@ toggleFormLink.addEventListener('click', ( e ) => {
         registerForm.classList.add('hidden');
         formTitle.textContent = 'Iniciar sesión';
         toggleFormLink.textContent = 'regístrate si no tienes una cuenta';
+        profilePicture.src = '/public/img/icono.png';
     } else {
         // Mostrar el formulario de registro
         loginForm.classList.add('hidden');
         registerForm.classList.remove('hidden');
         formTitle.textContent = 'Registrarse';
         toggleFormLink.textContent = '¿Ya tienes una cuenta? Inicia sesión';
+        
     }
 });

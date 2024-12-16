@@ -55,7 +55,7 @@ const renderFriendRequest = () => {
         container.appendChild( noRequestMessage ); 
     } else {
         const friendContainer = createElement('div', `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6`);
-        friendRequests.forEach( request => {
+        friendRequests.forEach( ( request, index ) => {
             const requestCard = createElement('div',`${ isDarkMode() ? 'bg-gray-700' : 'bg-white'} p-6 rounded-xl shadow-sm hover:shadow-md transition duration-300 flex flex-col items-center justify-center text-center`);
             requestCard.setAttribute('data-friendReques-id', request.id );
             const avatar = createElement('img', 'w-20 h-20 rounded-full mb-4');
@@ -81,6 +81,16 @@ const renderFriendRequest = () => {
             subDiv.appendChild( btnAccept );
             subDiv.appendChild( btnReject );
             requestCard.appendChild( subDiv );
+
+            anime({
+                targets: requestCard,
+                opacity: [0,1],
+                translateY: [ 70, 0 ], // Aumenta el valor de translateY para que se desplace más
+                duration: 150, // Reduce la duración de la animación a 500ms para que sea más rápido
+                delay: index * 100, // Retraso segun el indice
+                easing: 'easeOutQuad'
+            });
+
             friendContainer.appendChild( requestCard );
         });
         container.appendChild( friendContainer )

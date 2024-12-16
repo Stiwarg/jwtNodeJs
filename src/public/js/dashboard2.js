@@ -1,6 +1,10 @@
 import { friendRequests, updateNotificationBadge } from './sidebar/contentFriendRequest.js';
 import { createElement } from '../utilities/createElementDocument.js';
 import { toggleDarkMode, onDarkModeChange, isDarkMode } from '../utilities/themeState.js';
+import { createSectionProfile } from './profile/modal/createProfileModal.js';
+import { initializeProfileModal } from './profile/modalFeatures/profileModal.js';
+import { initializeNotificationModal } from './notification/notificationFeatures/notificationModal.js';
+
 // DOM Elements
 const app = document.getElementById('app');
 const sidebar = document.createElement('div');
@@ -295,7 +299,7 @@ const createSearchInput = () => {
     searchContainer.appendChild( searchInput );
 
     searchContainer.innerHTML += `
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-1/2 transform -translate-y-1/2" data-dark-class="text-gray-400" data-light-class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" data-dark-class="text-gray-400" data-light-class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     `;
 
     return searchContainer;
@@ -313,9 +317,9 @@ const createActionsButtons = () => {
         <span id="userName" class="font-medium ${ isDarkMode() ? 'text-white' : 'text-gray-800'} ${ showUserName ? '' : 'hidden'}" data-dark-class="font-medium text-white ${ showUserName ? '' : 'hidden' }"
         data-light-class="font-medium text-gray-800 ${ showUserName ? '' : 'hidden' }">${ currentUser.username }</span>
 
-        <button class="p-2 ${ isDarkMode() ? 'bg-gray-700' : 'bg-gray-100'} rounded-full" 
-        data-dark-class="p-2 bg-gray-700 rounded-full" 
-        data-light-class="p-2 bg-gray-100 rounded-full">
+        <button id="toggleNotificationBtn" class="p-2 ${ isDarkMode() ? 'bg-gray-700' : 'bg-gray-100'} rounded-full transition-colors duration-300 relative" 
+        data-dark-class="p-2 bg-gray-700 rounded-full transtion-colors duration-300 relative" 
+        data-light-class="p-2 bg-gray-100 rounded-full transition-colors relative">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </button>
 
@@ -326,6 +330,7 @@ const createActionsButtons = () => {
         </button>
     `;
 
+    // Añadir el eventListener de forma explícita 
     return actionsButtons;
 }
 
@@ -525,7 +530,7 @@ const updateUserName = () => {
     }
 }
 
-const initializeApp = () => {
+const initializeApp = async () => {
     app.innerHTML = '';
     const container = createElement('div', `containerMain max-w-6xl mx-auto ${ isDarkMode() ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-xl overflow-hidden`);
     const content = createElement('div', 'flex');
@@ -537,10 +542,13 @@ const initializeApp = () => {
     content.appendChild( mainContent );
     container.appendChild( content );
     app.appendChild( container );
-
+    await initializeProfileModal();
+    await initializeNotificationModal();
     //applyThemeToAll();
     // Add event listeners 
-    document.getElementById('toggleUserNameBtn').addEventListener('click', toggleUserName);
+    document.getElementById('toggleUserNameBtn').addEventListener('click', async () => {
+        toggleUserName();
+    });
     document.getElementById('toggleDarkModeBtn').addEventListener('click', toggleDarkMode);
     document.getElementById('toggleSettingsBtn').addEventListener('click', toggleSettingsMenu );
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);

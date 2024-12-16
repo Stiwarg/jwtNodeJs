@@ -142,7 +142,7 @@ const renderUserCard = ( user, index ) => {
         duration: 150, // Reduce la duración de la animación a 500ms para que sea más rápido
         delay: index * 100, // Retraso segun el indice
         easing: 'easeOutQuad'
-    })
+    });
 
 
     return userCard;
